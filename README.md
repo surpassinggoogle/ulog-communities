@@ -37,7 +37,7 @@ Starting the server for development `npm run dev`
 
 For production, I would suggest using PM2 Library. (Install with `npm install -g pm2`)
 
-Then, run `pm2 start src/index.js`
+Then, run `pm2 start dist/index.js`
 
 
 

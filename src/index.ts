@@ -8,6 +8,7 @@ import * as util from 'util'
 import { arrayContains, die, save } from './functions'
 import { TAG, WHITELIST, PERCENTAGE } from './config'
 import { getContent, comment } from './steem'
+import { cnPercentage } from './regex'
 
 // Init
 
@@ -52,23 +53,34 @@ stream.on('data', async operation => {
         let body = await getContent(author, permlink).catch(() =>
           console.error("Couldn't fetch post data with SteemJS")
         )
-        // Check wether commented before
-        await save(`@${author}/${permlink}`)
-          .then(isSaved => {
-            if (!!isSaved) {
-              console.log('sendingComment')
-              // Send Comment
-              comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
-                console.error("Couldn't comment on the violated post")
-              )
-              return
-            } else {
-              return
-            }
-          })
-          .catch(() => {
-            console.error("Couldn't save json")
-          })
+        //
+        let cn = cnPercentage(body)
+        // if error
+        if (cn.error !== '') return
+        // extract the percentage
+        let percentage = cn.ratio
+        // if less than treshold percentage
+        if (percentage < PERCENTAGE / 100) {
+          // Check wether commented before
+          await save(`@${author}/${permlink}`)
+            .then(isSaved => {
+              if (!!isSaved) {
+                console.log('sendingComment')
+                // Send Comment
+                comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
+                  console.error("Couldn't comment on the violated post")
+                )
+                return
+              } else {
+                return
+              }
+            })
+            .catch(() => {
+              console.error("Couldn't save json")
+            })
+        } else {
+          return
+        }
       }
     }
   }
