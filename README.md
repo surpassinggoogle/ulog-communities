@@ -26,7 +26,7 @@ Library used
 Create a `.env` to store your posting key and username.
 
 ```
-ACCOUNT_KEY=POSTING_KEY_HERE
+ACCOUNT_KEY=POSTING_KEY_HEREgit 
 ACCOUNT_NAME=STEEM_NAME
 ```
 
