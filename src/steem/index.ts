@@ -19,25 +19,23 @@ export const comment = async (
   postingAuthor: string
 ) => {
   const jsonMetadata = ''
-
   const comment_permlink = new Date()
     .toISOString()
     .replace(/[^a-zA-Z0-9]+/g, '')
     .toLowerCase()
 
+  const comment_data = {
+      author: postingAuthor,
+      title: '',
+      body: COMMENT(author),
+      json_metadata: jsonMetadata,
+      parent_author: author,
+      parent_permlink: permlink,
+      permlink: comment_permlink,
+  };
+
   await client.broadcast
-    .comment(
-      {
-        author: postingAuthor,
-        title: '',
-        body: COMMENT(author),
-        json_metadata: jsonMetadata,
-        parent_author: author,
-        parent_permlink: permlink,
-        permlink: comment_permlink
-      },
-      key
-    )
+    .comment(comment_data, key)
     .then(
       function(result) {
         console.log('Included in block: ' + result.block_num)
