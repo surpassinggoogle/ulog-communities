@@ -18,7 +18,7 @@ if (!process.env.ACCOUNT_NAME || !process.env.ACCOUNT_KEY) throw new Error('ENV 
 let ACCOUNT_NAME: string = process.env.ACCOUNT_NAME
 // @ts-ignore
 let ACCOUNT_KEY: string = process.env.ACCOUNT_KEY
-if (ACCOUNT_NAME === '' || ACCOUNT_NAME === '') die('Check .env file')
+if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '') die('Check .env file')
 
 // Steem Init
 
@@ -62,9 +62,11 @@ stream.on('data', async operation => {
     if (post.body && post.body.indexOf(BOT_COMMAND) >= 0) {
       console.log('sendingComment')
       // Send Comment
+      /*
       comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
         console.error("Couldn't comment on the violated post")
       )
+      /* */
     }
   }
   return
