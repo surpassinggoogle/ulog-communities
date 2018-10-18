@@ -96,11 +96,9 @@ stream.on('data', async operation => {
 
     console.log('sendingComment')
     // Send Comment
-    /*
     comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
       console.error("Couldn't comment on the violated post")
     )
-    /* */
   }
   return
 })
