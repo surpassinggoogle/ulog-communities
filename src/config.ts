@@ -1,6 +1,6 @@
 const BOT_COMMAND = 'ulogy'
 const MAIN_TAG = 'ulogs'
-const APP = 'ulogs'
+const APP_NAME = 'ulogs'
 const SUB_TAGS: string[] = ['ulog-cat1', 'ulog-cat2', 'ulog-cat3', 'ulog-cat4']
 const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael']
 const OVERSEERS = [
@@ -22,4 +22,4 @@ const WHITELIST: string[] = ['superoo7']
 // percentage allowed for CN words (e.g. 20%)
 const PERCENTAGE: number = 20
 
-export { APP, BOT_COMMAND, MAIN_TAG, SUB_TAGS, CERTIFIED_ULOGGERS, OVERSEERS, COMMENT, WHITELIST, PERCENTAGE }
+export { APP_NAME, BOT_COMMAND, MAIN_TAG, SUB_TAGS, CERTIFIED_ULOGGERS, OVERSEERS, COMMENT, WHITELIST, PERCENTAGE }

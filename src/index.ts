@@ -6,7 +6,7 @@ import * as util from 'util'
 
 // file
 import { arrayContains, die } from './functions'
-import { APP, BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
+import { APP_NAME, BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
 import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
 // Init
@@ -56,7 +56,10 @@ stream.on('data', async operation => {
       console.error('Invalid app')
       return
     }
-    if(app.indexOf(APP) < 0) return
+    console.log('app', app)
+    console.log('APP_NAME', APP_NAME);
+    console.log('is posted using ulogs', app.indexOf(APP_NAME) < 0)
+    if(app.indexOf(APP_NAME) < 0) return
 
     // 4) post contains specific command
     if (post.body && post.body.indexOf(BOT_COMMAND) >= 0) {
