@@ -6,19 +6,25 @@ import * as util from 'util'
 
 // file
 import { arrayContains, die } from './functions'
-import { ULOGS_APP, BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS, OVERSEERS } from './config'
+import { CERTIFIED_ULOGGERS, OVERSEERS } from './config'
 import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
 // Init
 
 // Environment Init
 dotenv.config()
-if (!process.env.ACCOUNT_NAME || !process.env.ACCOUNT_KEY) throw new Error('ENV variable missing')
+if (!process.env.ACCOUNT_NAME || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP) throw new Error('ENV variable missing')
 // @ts-ignore
 let ACCOUNT_NAME: string = process.env.ACCOUNT_NAME
 // @ts-ignore
 let ACCOUNT_KEY: string = process.env.ACCOUNT_KEY
-if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '') die('Check .env file')
+// @ts-ignore
+let BOT_COMMAND: string = process.env.BOT_COMMAND
+// @ts-ignore
+let MAIN_TAG: string = process.env.MAIN_TAG
+// @ts-ignore
+let ULOGS_APP: string = process.env.ULOGS_APP
+if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
 
 // Steem Init
 
@@ -55,9 +61,11 @@ stream.on('data', async operation => {
       console.error('Invalid app')
       return
     }
+    console.log('posted using ulogs: ', app.indexOf(ULOGS_APP) >= 0)
     if(app.indexOf(ULOGS_APP) < 0) return
 
     // 4) body contains specific command
+    console.log('body contains command: ', post.body.indexOf(BOT_COMMAND) >= 0)
     if (post.body && post.body.indexOf(BOT_COMMAND) < 0) return
 
     let tags: string[]
@@ -69,6 +77,7 @@ stream.on('data', async operation => {
     }
 
     // 5) First tag is 'ulogs'
+    console.log('first tag is main tag: ', tags[0] === MAIN_TAG)
     if (tags[0] !== MAIN_TAG) return
 
     // 6)get root post (to get all tags)
@@ -87,11 +96,11 @@ stream.on('data', async operation => {
     // TODO: change to map
     let subtags = OVERSEERS.filter(overseerObj => overseerObj.name === author).map(result => result.tags)
     // 7a) Is an overseer?
-    console.log('is an overseer? ', subtags);
+    console.log('summoner is an overseer? ', subtags);
     if (subtags && subtags.length == 0) return
 
     // 7b) Is an overseer of sub-tag?
-    console.log('is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
+    console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
     if(!arrayContains(rootTags[1], subtags[0])) return
 
     console.log('sendingComment')
