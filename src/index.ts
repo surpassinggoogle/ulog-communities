@@ -43,8 +43,6 @@ stream.on('data', async operation => {
       return
     }
 
-    console.log(certifiedUloggers)
-
     let author: string = txData.author
     let permlink: string = txData.permlink
     let body = await getContent(author, permlink).catch(() =>
