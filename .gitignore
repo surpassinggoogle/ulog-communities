@@ -1,0 +1,6 @@
+.env
+dist/
+node_modules/
+data.json
+npm-debug.log
+package-lock.json
