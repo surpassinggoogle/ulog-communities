@@ -50,6 +50,24 @@ stream.on('data', async operation => {
 
     if (body && body.indexOf(BOT_COMMAND) >= 0) {
 
+      let root_author: string = txData.root_author
+      let root_permlink: string = txData.root_permlink
+      if (!root_author && !root_permlink) return
+      let root_post = await getPostData(root_author, root_permlink).catch(() =>
+        console.error("Couldn't fetch post data with SteemJS")
+      )
+      console.log('root post', root_post)
+
+      let tags: string[]
+      try {
+        tags = JSON.parse(root_post.json_metadata).tags
+      } catch (e) {
+        console.error('Invalid tags')
+        return
+      }
+
+      if (tags[0] !== MAIN_TAG) return
+
       console.log('sendingComment')
       // Send Comment
       comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
