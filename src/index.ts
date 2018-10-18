@@ -5,7 +5,7 @@ import * as es from 'event-stream'
 import * as util from 'util'
 
 // file
-import { die } from './functions'
+import { die, getCertifiedUloggers } from './functions'
 import { TAG } from './config'
 import { getContent, comment } from './steem'
 
@@ -28,6 +28,8 @@ const stream = client.blockchain.getOperationsStream()
 
 console.log('Operation started')
 
+const certifiedUloggers = getCertifiedUloggers(client)
+
 // Stream Steem Blockchain
 stream.on('data', async operation => {
   // Look for comment type of transaction
@@ -40,6 +42,9 @@ stream.on('data', async operation => {
       console.error('Invalid tags')
       return
     }
+
+    console.log(certifiedUloggers)
+
     let author: string = txData.author
     let permlink: string = txData.permlink
     let body = await getContent(author, permlink).catch(() =>
