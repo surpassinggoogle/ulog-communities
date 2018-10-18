@@ -6,7 +6,7 @@ import * as util from 'util'
 
 // file
 import { die } from './functions'
-import { TAG } from './config'
+import { MAIN_TAG } from './config'
 import { getContent, comment, getCertifiedUloggers } from './steem'
 
 // Init
@@ -40,6 +40,8 @@ stream.on('data', async operation => {
       console.error('Invalid tags')
       return
     }
+
+    if (tags[0] !== MAIN_TAG) return
 
     let author: string = txData.author
     let permlink: string = txData.permlink

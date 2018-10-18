@@ -7,10 +7,6 @@ Current Version: v0.0.1
 
 License: MIT
 
-## Feature
-- Whitelisted list.
-- A data.json is generated to store data of a post in case the bot had already commented.
-
 ## Developer notes
 
 Library used
