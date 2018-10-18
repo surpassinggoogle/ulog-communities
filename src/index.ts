@@ -5,7 +5,7 @@ import * as es from 'event-stream'
 import * as util from 'util'
 
 // file
-import { die } from './functions'
+import { arrayContains, die } from './functions'
 import { BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
 import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
