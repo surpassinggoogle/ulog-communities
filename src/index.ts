@@ -6,7 +6,7 @@ import * as util from 'util'
 
 // file
 import { arrayContains, die } from './functions'
-import { BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
+import { APP, BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
 import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
 // Init
@@ -34,40 +34,32 @@ stream.on('data', async operation => {
   if (operation.op[0] == 'comment') {
     let txData = operation.op[1]
 
-    //console.log('tx data' , txData);
-
-    // skip if post
+    // 1) check if reply (not post)
     if (txData.parent_author === '') return
 
-    // get body
+    // 2) check if certified ulogger
     let author: string = txData.author
     if(!arrayContains(author, CERTIFIED_ULOGGERS)) return
+    console.log('is certified ulogger', arrayContains(author, CERTIFIED_ULOGGERS))
 
+    // get post content/body
     let permlink: string = txData.permlink
-    let body = await getContent(author, permlink).catch(() =>
+    let post = await getPostData(author, permlink).catch(() =>
       console.error("Couldn't fetch post data with SteemJS")
     )
 
-    if (body && body.indexOf(BOT_COMMAND) >= 0) {
+    // 3) posted using 'ulogs' app
+    let app: string = ''
+    try {
+      app = JSON.parse(post.json_metadata).app
+    } catch (e) {
+      console.error('Invalid app')
+      return
+    }
+    if(app.indexOf(APP) < 0) return
 
-      let root_author: string = txData.root_author
-      let root_permlink: string = txData.root_permlink
-      if (!root_author && !root_permlink) return
-      let root_post = await getPostData(root_author, root_permlink).catch(() =>
-        console.error("Couldn't fetch post data with SteemJS")
-      )
-      //console.log('root post', root_post)
-
-      let tags: string[]
-      try {
-        tags = JSON.parse(root_post.json_metadata).tags
-      } catch (e) {
-        console.error('Invalid tags')
-        return
-      }
-
-      if (tags[0] !== MAIN_TAG) return
-
+    // 4) post contains specific command
+    if (post.body && post.body.indexOf(BOT_COMMAND) >= 0) {
       console.log('sendingComment')
       // Send Comment
       comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
