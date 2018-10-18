@@ -6,8 +6,8 @@ import * as util from 'util'
 
 // file
 import { die } from './functions'
-import { MAIN_TAG } from './config'
-import { getContent, comment, getCertifiedUloggers } from './steem'
+import { BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS } from './config'
+import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
 // Init
 
@@ -33,23 +33,23 @@ stream.on('data', async operation => {
   // Look for comment type of transaction
   if (operation.op[0] == 'comment') {
     let txData = operation.op[1]
-    let tags: string[]
-    try {
-      tags = JSON.parse(txData.json_metadata).tags
-    } catch (e) {
-      console.error('Invalid tags')
-      return
-    }
 
-    if (tags[0] !== MAIN_TAG) return
+    console.log('tx data' , txData);
 
+    // skip if post
+    if (txData.parent_author === '') return
+
+    // get body
     let author: string = txData.author
+    if(!arrayContains(author, CERTIFIED_ULOGGERS)) return
+
     let permlink: string = txData.permlink
     let body = await getContent(author, permlink).catch(() =>
       console.error("Couldn't fetch post data with SteemJS")
     )
 
-    if (body && body.indexOf('ulogs-command') >= 0) {
+    if (body && body.indexOf(BOT_COMMAND) >= 0) {
+
       console.log('sendingComment')
       // Send Comment
       comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>

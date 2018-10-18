@@ -10,6 +10,13 @@ export const getContent = async (author: string, permlink: string) => {
   return data.body
 }
 
+// This function will get the content of the post
+export const getPostData = async (author: string, permlink: string) => {
+  let data = await steem.api.getContentAsync(author, permlink)
+  return data
+}
+
+
 export const getCertifiedUloggers = async (client: Client) => {
   let followlist = await client.call('follow_api', 'get_following', [
       'uloggers',
