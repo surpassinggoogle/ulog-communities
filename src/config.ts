@@ -1,5 +1,6 @@
 const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael', 'surpassinggoogle']
 const OVERSEERS = [
+  {name: 'east.autovote', 'tags': ['surpassinggoogle']}, 
   {name: 'eastmael', 'tags': ['surpassinggoogle']}, 
   {name: 'surpassinggoogle', 'tags': ['surpassinggoogle']}, 
 ]
