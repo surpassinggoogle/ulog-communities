@@ -1,9 +1,8 @@
-const BOT_COMMAND = 'ulogy'
-const MAIN_TAG = 'ulog'
-const ULOGS_APP = 'ulogs/1.0.0'
-const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael']
+const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael', 'surpassinggoogle']
 const OVERSEERS = [
-  {name: 'east.autovote', 'tags': ['surpassinggoogle', 'ulog-cat2']}, 
+  {name: 'east.autovote', 'tags': ['surpassinggoogle']}, 
+  {name: 'eastmael', 'tags': ['surpassinggoogle']}, 
+  {name: 'surpassinggoogle', 'tags': ['surpassinggoogle']}, 
 ]
 
 const COMMENT = (author: string): string => {
@@ -18,4 +17,4 @@ const WHITELIST: string[] = ['superoo7']
 // percentage allowed for CN words (e.g. 20%)
 const PERCENTAGE: number = 20
 
-export { ULOGS_APP, BOT_COMMAND, MAIN_TAG, CERTIFIED_ULOGGERS, OVERSEERS, COMMENT, WHITELIST, PERCENTAGE }
+export { CERTIFIED_ULOGGERS, OVERSEERS, COMMENT, WHITELIST, PERCENTAGE }
