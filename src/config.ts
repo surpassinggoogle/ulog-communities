@@ -1,6 +1,7 @@
-const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael']
+const CERTIFIED_ULOGGERS: string[] = ['east.autovote', 'eastmael', 'surpassinggoogle']
 const OVERSEERS = [
-  {name: 'eastmael', 'tags': ['surpassinggoogle', 'ulog-cat2']}, 
+  {name: 'eastmael', 'tags': ['surpassinggoogle']}, 
+  {name: 'surpassinggoogle', 'tags': ['surpassinggoogle']}, 
 ]
 
 const COMMENT = (author: string): string => {
