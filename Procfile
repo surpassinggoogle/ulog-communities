@@ -1,1 +1,1 @@
-web: pm2 start dist/index.js --update-env && pm2 logs all
+worker: pm2 start dist/index.js --update-env && pm2 logs all

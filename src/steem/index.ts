@@ -10,6 +10,17 @@ export const getContent = async (author: string, permlink: string) => {
   return data.body
 }
 
+export const getCertifiedUloggers = async (client: Client) => {
+  let followlist = await client.call('follow_api', 'get_following', [
+      'uloggers',
+      '',
+      'blog',
+      1000,
+  ])
+
+  return followlist
+}
+
 // This function will comment on the post
 export const comment = async (
   client: Client,

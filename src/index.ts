@@ -5,9 +5,9 @@ import * as es from 'event-stream'
 import * as util from 'util'
 
 // file
-import { die, getCertifiedUloggers } from './functions'
+import { die } from './functions'
 import { TAG } from './config'
-import { getContent, comment } from './steem'
+import { getContent, comment, getCertifiedUloggers } from './steem'
 
 // Init
 
@@ -27,8 +27,6 @@ let key = PrivateKey.from(ACCOUNT_KEY)
 const stream = client.blockchain.getOperationsStream()
 
 console.log('Operation started')
-
-const certifiedUloggers = getCertifiedUloggers(client)
 
 // Stream Steem Blockchain
 stream.on('data', async operation => {
