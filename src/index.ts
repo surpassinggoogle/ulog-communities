@@ -34,7 +34,7 @@ stream.on('data', async operation => {
   if (operation.op[0] == 'comment') {
     let txData = operation.op[1]
 
-    console.log('tx data' , txData);
+    //console.log('tx data' , txData);
 
     // skip if post
     if (txData.parent_author === '') return
@@ -56,7 +56,7 @@ stream.on('data', async operation => {
       let root_post = await getPostData(root_author, root_permlink).catch(() =>
         console.error("Couldn't fetch post data with SteemJS")
       )
-      console.log('root post', root_post)
+      //console.log('root post', root_post)
 
       let tags: string[]
       try {
