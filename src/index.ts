@@ -97,14 +97,14 @@ getCertifiedUloggers(client).then(res => {
 
       // 5) Summoner is overseer of sub-tag
       // TODO: Change to map
-      let subtags = OVERSEERS.filter(overseerObj => overseerObj.name === author).map(result => result.tags)
+      let subtags = OVERSEERS[author]
       // 7a) Is an overseer?
       console.log('summoner is an overseer? ', subtags);
       let isOverseer = (subtags && subtags.length > 0)
 
       // 7b) Is an overseer of sub-tag?
-      console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
-      let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags[0]))
+      console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags));
+      let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags))
 
       console.log('sendingComment')
       let commentTemplate: string = ''

@@ -1,8 +1,8 @@
-const OVERSEERS = [
-  {name: 'east.autovote', 'tags': ['surpassinggoogle']}, 
-  {name: 'eastmael', 'tags': ['surpassinggoogle']}, 
-  {name: 'surpassinggoogle', 'tags': ['surpassinggoogle']}, 
-]
+let OVERSEERS: {[key:string]: string[]} = {
+  'east.autovote': ['surpassinggoogle'], 
+  'eastmael': ['surpassinggoogle'], 
+  'surpassinggoogle': ['surpassinggoogle'], 
+}
 
 const COMMENT = (author: string): string => {
   return `
