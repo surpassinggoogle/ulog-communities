@@ -92,7 +92,7 @@ getCertifiedUloggers(client).then(res => {
         console.error('Invalid root tags')
         return
       }
-      console.log('first tag is main tag: ', )
+      console.log('first tag is main tag: ', rootTags[0] === MAIN_TAG)
       let isFirstTagUlog = (rootTags[0] === MAIN_TAG)
 
       // 5) Summoner is overseer of sub-tag
@@ -103,7 +103,7 @@ getCertifiedUloggers(client).then(res => {
 
       // 7b) Is an overseer of sub-tag?
       console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
-      let isSubtagOverseer = (arrayContains(rootTags[1], subtags[0]))
+      let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags[0]))
 
       console.log('sendingComment')
       let commentTemplate: string = ''
