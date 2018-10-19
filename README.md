@@ -1,7 +1,6 @@
 # ULOGS BOT
 
 Steem Bot To Enable And Grow Ulogs.org Communities & Ulog-subtags.
-Imported from https://github.com/superoo7/cn-malaysia.
 
 Current Version: v0.0.1
 
@@ -19,11 +18,15 @@ Library used
 
 ## How to use it
 
-Create a `.env` to store your posting key and username.
+Create a `.env` to store your posting key, username, and other configurations.
 
 ```
 ACCOUNT_KEY=POSTING_KEY_HEREgit 
 ACCOUNT_NAME=STEEM_NAME
+BOT_COMMAND=ulogy
+MAIN_TAG=ulog
+ULOGS_APP=ulogs/1.0.0
+SIMULATE_ONLY=true
 ```
 
 Change variables in `config.ts`
