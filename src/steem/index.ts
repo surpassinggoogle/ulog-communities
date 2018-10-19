@@ -33,7 +33,7 @@ export const comment = async (
   permlink: string,
   key: PrivateKey,
   postingAuthor: string,
-  commenBody: string,
+  commentBody: string,
 ) => {
   const jsonMetadata = ''
   const comment_permlink = new Date()
@@ -44,7 +44,7 @@ export const comment = async (
   const comment_data = {
       author: postingAuthor,
       title: '',
-      body: commenBody,
+      body: commentBody,
       json_metadata: jsonMetadata,
       parent_author: author,
       parent_permlink: permlink,
