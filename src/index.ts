@@ -6,7 +6,7 @@ import * as util from 'util'
 
 // file
 import { arrayContains, die } from './functions'
-import { OVERSEERS } from './config'
+import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
 import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
 
 // Init
@@ -24,6 +24,8 @@ let BOT_COMMAND: string = process.env.BOT_COMMAND
 let MAIN_TAG: string = process.env.MAIN_TAG
 // @ts-ignore
 let ULOGS_APP: string = process.env.ULOGS_APP
+// @ts-ignore
+let TEST: string = process.env.TEST
 if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
 
 // Steem Init
@@ -45,52 +47,44 @@ getCertifiedUloggers(client).then(res => {
     if (operation.op[0] == 'comment') {
       let txData = operation.op[1]
 
-      // 1) check if reply (not post)
+      // check if reply (return if post)
       if (txData.parent_author === '') return
 
-      // 2) check if certified ulogger
+      // get post data
       let author: string = txData.author
-      if(!arrayContains(author, certifiedUloggers)) return
-
-      // get post content/body
       let permlink: string = txData.permlink
       let post = await getPostData(author, permlink).catch(() =>
         console.error("Couldn't fetch post data with SteemJS")
       )
 
+      // check if summoned by specific command
+      if (post.body && post.body.indexOf(BOT_COMMAND) < 0) return
+
+      // #################### CHECKS #######################
+
+      // 2) check if certified ulogger
+      if(TEST) {
+        certifiedUloggers.push('eastmael', 'east.autovote')
+      }
+      let isCertifiedUlogger = arrayContains(author, certifiedUloggers)
+
+      // get root post (to get all tags)
+      let rootPost = await getPostData(post.parent_author, post.parent_permlink).catch(() =>
+        console.error("Couldn't fetch ROOT post data with SteemJS")
+      )
+
       // 3) posted using 'ulogs' app
       let app: string = ''
       try {
-        app = JSON.parse(post.json_metadata).app
+        app = JSON.parse(rootPost.json_metadata).app
       } catch (e) {
         console.error('Invalid app')
         return
       }
       console.log('posted using ulogs: ', app.indexOf(ULOGS_APP) >= 0)
-      if(app.indexOf(ULOGS_APP) < 0) return
+      let isUlogApp = app.indexOf(ULOGS_APP) >= 0
 
-      // 4) body contains specific command
-      console.log('body contains command: ', post.body.indexOf(BOT_COMMAND) >= 0)
-      if (post.body && post.body.indexOf(BOT_COMMAND) < 0) return
-
-      let tags: string[]
-      try {
-        tags = JSON.parse(post.json_metadata).tags
-      } catch (e) {
-        console.error('Invalid tags')
-        return
-      }
-
-      // 5) First tag is 'ulogs'
-      console.log('first tag is main tag: ', tags[0] === MAIN_TAG)
-      if (tags[0] !== MAIN_TAG) return
-
-      // 6)get root post (to get all tags)
-      let rootPost = await getPostData(post.parent_author, post.parent_permlink).catch(() =>
-        console.error("Couldn't fetch ROOT post data with SteemJS")
-      )
-
-      // 7) Summoner is overseer of sub-tag
+      // 4) First tag is 'ulogs'
       let rootTags: string[]
       try {
         rootTags = JSON.parse(rootPost.json_metadata).tags
@@ -98,20 +92,31 @@ getCertifiedUloggers(client).then(res => {
         console.error('Invalid root tags')
         return
       }
-      // TODO: change to map
+      console.log('first tag is main tag: ', )
+      let isFirstTagUlog = (rootTags[0] === MAIN_TAG)
+
+      // 5) Summoner is overseer of sub-tag
       let subtags = OVERSEERS.filter(overseerObj => overseerObj.name === author).map(result => result.tags)
       // 7a) Is an overseer?
       console.log('summoner is an overseer? ', subtags);
-      if (subtags && subtags.length == 0) return
+      let isOverseer = (subtags && subtags.length > 0)
 
       // 7b) Is an overseer of sub-tag?
       console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
-      if(!arrayContains(rootTags[1], subtags[0])) return
+      let isSubtagOverseer = (arrayContains(rootTags[1], subtags[0]))
 
       console.log('sendingComment')
+      let commentTemplate: string = ''
+      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer) {
+        commentTemplate = SUCCESS_COMMENT(author, ACCOUNT_NAME)
+      } else {
+        commentTemplate = FAIL_COMMENT(author, ACCOUNT_NAME, rootTags[1])
+      }
+
+      console.log(commentTemplate)
       /*
       // Send Comment
-      comment(client, author, permlink, key, ACCOUNT_NAME).catch(() =>
+      comment(client, author, permlink, key, ACCOUNT_NAME, commentTemplate).catch(() =>
         console.error("Couldn't comment on the violated post")
       )
       /* */

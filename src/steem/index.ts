@@ -2,8 +2,6 @@ import { Client, DatabaseAPI, DisqussionQuery, PrivateKey } from 'dsteem'
 import * as dsteem from 'dsteem'
 import * as steem from 'steem'
 
-import { COMMENT } from '../config'
-
 // This function will get the content of the post
 export const getContent = async (author: string, permlink: string) => {
   let data = await steem.api.getContentAsync(author, permlink)
@@ -34,7 +32,8 @@ export const comment = async (
   author: string,
   permlink: string,
   key: PrivateKey,
-  postingAuthor: string
+  postingAuthor: string,
+  commenBody: string,
 ) => {
   const jsonMetadata = ''
   const comment_permlink = new Date()
@@ -45,7 +44,7 @@ export const comment = async (
   const comment_data = {
       author: postingAuthor,
       title: '',
-      body: COMMENT(author),
+      body: commenBody,
       json_metadata: jsonMetadata,
       parent_author: author,
       parent_permlink: permlink,
