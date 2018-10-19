@@ -26,6 +26,35 @@ export const getCertifiedUloggers = async (client: Client) => {
   return followlist
 }
 
+export const vote = async (
+  client: Client,
+  voter: string,
+  author: string,
+  permlink: string,
+  weight: number,
+  key: PrivateKey,
+) => {
+  const vote_data = {
+      voter,
+      author,
+      permlink,
+      weight, //needs to be an integer for the vote function
+  };
+
+  await client.broadcast
+    .vote(vote_data, key)
+    .then(
+      function(result) {
+        console.log('Included in block: ' + result.block_num)
+        console.log(`Commented on @${author}/${permlink}`)
+      },
+      function(error) {
+        console.error(error)
+      }
+    )
+  return
+}
+
 // This function will comment on the post
 export const comment = async (
   client: Client,

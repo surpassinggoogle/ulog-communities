@@ -7,15 +7,15 @@ import * as util from 'util'
 // file
 import { arrayContains, die } from './functions'
 import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
-import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
+import { getContent, getPostData, getCertifiedUloggers, comment, vote } from './steem'
 
 // Init
 
 // Environment Init
 dotenv.config()
-if (!process.env.ACCOUNT_NAME || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP) throw new Error('ENV variable missing')
+if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP) throw new Error('ENV variable missing')
 // @ts-ignore
-let ACCOUNT_NAME: string = process.env.ACCOUNT_NAME
+let BOT: string = process.env.BOT
 // @ts-ignore
 let ACCOUNT_KEY: string = process.env.ACCOUNT_KEY
 // @ts-ignore
@@ -26,7 +26,7 @@ let MAIN_TAG: string = process.env.MAIN_TAG
 let ULOGS_APP: string = process.env.ULOGS_APP
 // @ts-ignore
 let SIMULATE_ONLY: string = process.env.SIMULATE_ONLY
-if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
+if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
 
 // Steem Init
 
@@ -59,6 +59,7 @@ getCertifiedUloggers(client).then(res => {
 
       // check if summoned by specific command
       if (post.body && post.body.indexOf(BOT_COMMAND) < 0) return
+      console.log(post)
 
       // #################### CHECKS #######################
 
@@ -68,8 +69,13 @@ getCertifiedUloggers(client).then(res => {
       }
       let isCertifiedUlogger = arrayContains(author, certifiedUloggers)
 
+      // 2b) check summon is a direct reply under the post
+      let isReplyToPost = (post.root_author === post.parent_author 
+        && post.root_permlink === post.parent_permlink)
+      console.log('is reply directly under post:', isReplyToPost) 
+
       // get root post (to get all tags)
-      let rootPost = await getPostData(post.parent_author, post.parent_permlink).catch(() =>
+      let rootPost = await getPostData(post.root_author, post.root_permlink).catch(() =>
         console.error("Couldn't fetch ROOT post data with SteemJS")
       )
 
@@ -109,16 +115,21 @@ getCertifiedUloggers(client).then(res => {
       console.log('sendingComment')
       let commentTemplate: string = ''
       if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer) {
-        commentTemplate = SUCCESS_COMMENT(author, ACCOUNT_NAME)
+        commentTemplate = SUCCESS_COMMENT(author, BOT)
       } else {
-        commentTemplate = FAIL_COMMENT(author, ACCOUNT_NAME, rootTags[1])
+        commentTemplate = FAIL_COMMENT(author, BOT, rootTags[1])
       }
 
       if (SIMULATE_ONLY) {
         console.log(commentTemplate)
       } else {
         // Send Comment
-        comment(client, author, permlink, key, ACCOUNT_NAME, commentTemplate).catch(() =>
+        comment(client, author, permlink, key, BOT, commentTemplate).catch(() =>
+          console.error("Couldn't comment on the violated post")
+        )
+
+        // Upvote post
+        vote(client, BOT, author, rootPost.permlink, 10, key).catch(() =>
           console.error("Couldn't comment on the violated post")
         )
       }
