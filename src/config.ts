@@ -1,6 +1,6 @@
 let OVERSEERS: {[key:string]: string[]} = {
-  'east.autovote': ['surpassinggoogle'], 
-  'eastmael': ['surpassinggoogle'], 
+  'east.autovote': ['surpassinggoogle', 'subtag'], 
+  'eastmael': ['surpassinggoogle', 'subtag'], 
   'surpassinggoogle': ['surpassinggoogle'], 
 }
 
