@@ -13,7 +13,7 @@ import { getContent, getPostData, getCertifiedUloggers, comment, vote } from './
 
 // Environment Init
 dotenv.config()
-if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP) throw new Error('ENV variable missing')
+if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP || !process.env.DEFAULT_VOTE_WEIGHT) throw new Error('ENV variable missing')
 // @ts-ignore
 let BOT: string = process.env.BOT
 // @ts-ignore
@@ -26,7 +26,9 @@ let MAIN_TAG: string = process.env.MAIN_TAG
 let ULOGS_APP: string = process.env.ULOGS_APP
 // @ts-ignore
 let SIMULATE_ONLY: string = process.env.SIMULATE_ONLY
-if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
+// @ts-ignore
+let DEFAULT_VOTE_WEIGHT: number = process.env.DEFAULT_VOTE_WEIGHT
+if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '' || DEFAULT_VOTE_WEIGHT === 0) die('Check .env file')
 
 // Steem Init
 
@@ -129,7 +131,7 @@ getCertifiedUloggers(client).then(res => {
         )
 
         // Upvote post
-        vote(client, BOT, author, rootPost.permlink, 10, key).catch(() =>
+        vote(client, BOT, author, rootPost.permlink, DEFAULT_VOTE_WEIGHT, key).catch(() =>
           console.error("Couldn't comment on the violated post")
         )
       }
