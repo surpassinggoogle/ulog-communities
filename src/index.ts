@@ -25,7 +25,7 @@ let MAIN_TAG: string = process.env.MAIN_TAG
 // @ts-ignore
 let ULOGS_APP: string = process.env.ULOGS_APP
 // @ts-ignore
-let TEST: string = process.env.TEST
+let SIMULATE_ONLY: string = process.env.SIMULATE_ONLY
 if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
 
 // Steem Init
@@ -63,7 +63,7 @@ getCertifiedUloggers(client).then(res => {
       // #################### CHECKS #######################
 
       // 2) check if certified ulogger
-      if(TEST) {
+      if(SIMULATE_ONLY) {
         certifiedUloggers.push('eastmael', 'east.autovote')
       }
       let isCertifiedUlogger = arrayContains(author, certifiedUloggers)
@@ -96,6 +96,7 @@ getCertifiedUloggers(client).then(res => {
       let isFirstTagUlog = (rootTags[0] === MAIN_TAG)
 
       // 5) Summoner is overseer of sub-tag
+      // TODO: Change to map
       let subtags = OVERSEERS.filter(overseerObj => overseerObj.name === author).map(result => result.tags)
       // 7a) Is an overseer?
       console.log('summoner is an overseer? ', subtags);
@@ -113,13 +114,14 @@ getCertifiedUloggers(client).then(res => {
         commentTemplate = FAIL_COMMENT(author, ACCOUNT_NAME, rootTags[1])
       }
 
-      console.log(commentTemplate)
-      /*
-      // Send Comment
-      comment(client, author, permlink, key, ACCOUNT_NAME, commentTemplate).catch(() =>
-        console.error("Couldn't comment on the violated post")
-      )
-      /* */
+      if (SIMULATE_ONLY) {
+        console.log(commentTemplate)
+      } else {
+        // Send Comment
+        comment(client, author, permlink, key, ACCOUNT_NAME, commentTemplate).catch(() =>
+          console.error("Couldn't comment on the violated post")
+        )
+      }
     }
     return
   })
