@@ -117,7 +117,7 @@ getCertifiedUloggers(client).then(res => {
       let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags))
 
       let commentTemplate: string = ''
-      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer) {
+      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer && isReplyToPost) {
         commentTemplate = SUCCESS_COMMENT(summoner, BOT)
       } else {
         commentTemplate = FAIL_COMMENT(summoner, BOT, rootTags[1])
