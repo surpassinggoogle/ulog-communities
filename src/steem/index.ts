@@ -34,6 +34,7 @@ export const vote = async (
   weight: number,
   key: PrivateKey,
 ) => {
+
   const vote_data = {
       voter,
       author,
@@ -46,10 +47,11 @@ export const vote = async (
     .then(
       function(result) {
         console.log('Included in block: ' + result.block_num)
-        console.log(`Commented on @${author}/${permlink}`)
+        console.log(`Voted on @${author}/${permlink}`)
       },
       function(error) {
         console.error(error)
+        throw error
       }
     )
   return
@@ -79,6 +81,7 @@ export const comment = async (
       parent_permlink: permlink,
       permlink: comment_permlink,
   };
+  console.log('comment data', comment_data)
 
   await client.broadcast
     .comment(comment_data, key)
@@ -89,6 +92,7 @@ export const comment = async (
       },
       function(error) {
         console.error(error)
+        throw error
       }
     )
   return
