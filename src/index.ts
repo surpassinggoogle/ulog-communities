@@ -7,15 +7,15 @@ import * as util from 'util'
 // file
 import { arrayContains, die } from './functions'
 import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
-import { getContent, getPostData, comment, getCertifiedUloggers } from './steem'
+import { getContent, getPostData, getCertifiedUloggers, comment, vote } from './steem'
 
 // Init
 
 // Environment Init
 dotenv.config()
-if (!process.env.ACCOUNT_NAME || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP) throw new Error('ENV variable missing')
+if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP || !process.env.DEFAULT_VOTE_WEIGHT) throw new Error('ENV variable missing')
 // @ts-ignore
-let ACCOUNT_NAME: string = process.env.ACCOUNT_NAME
+let BOT: string = process.env.BOT
 // @ts-ignore
 let ACCOUNT_KEY: string = process.env.ACCOUNT_KEY
 // @ts-ignore
@@ -25,17 +25,21 @@ let MAIN_TAG: string = process.env.MAIN_TAG
 // @ts-ignore
 let ULOGS_APP: string = process.env.ULOGS_APP
 // @ts-ignore
-let SIMULATE_ONLY: string = process.env.SIMULATE_ONLY
-if (ACCOUNT_NAME === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '') die('Check .env file')
+let SIMULATE_ONLY: boolean = (process.env.SIMULATE_ONLY === "true")
+// @ts-ignore
+let ADD_ULOG_TEST_ACCOUNTS: boolean = (process.env.ADD_ULOG_TEST_ACCOUNTS === "true")
+// @ts-ignore
+let DEFAULT_VOTE_WEIGHT: number = parseInt(process.env.DEFAULT_VOTE_WEIGHT)
+if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '' || DEFAULT_VOTE_WEIGHT === 0) die('Check .env file')
 
 // Steem Init
-
 
 const client = new Client('https://api.steemit.com')
 let key = PrivateKey.from(ACCOUNT_KEY)
 const stream = client.blockchain.getOperationsStream()
 
 console.log('Operation started')
+console.log('Is simulation?', SIMULATE_ONLY)
 
 getCertifiedUloggers(client).then(res => {
   let certifiedUloggers: string[] = []
@@ -51,25 +55,32 @@ getCertifiedUloggers(client).then(res => {
       if (txData.parent_author === '') return
 
       // get post data
-      let author: string = txData.author
+      let summoner: string = txData.author
       let permlink: string = txData.permlink
-      let post = await getPostData(author, permlink).catch(() =>
+      let post = await getPostData(summoner, permlink).catch(() =>
         console.error("Couldn't fetch post data with SteemJS")
       )
 
       // check if summoned by specific command
-      if (post.body && post.body.indexOf(BOT_COMMAND) < 0) return
+      if (post.body && post.body.toLowerCase().indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
+      console.log('summon post/comment data: ', post)
 
       // 2) check if certified ulogger
-      if(SIMULATE_ONLY) {
+      if(ADD_ULOG_TEST_ACCOUNTS) {
+        console.log('adding uloggers for testing')
         certifiedUloggers.push('eastmael', 'east.autovote')
       }
-      let isCertifiedUlogger = arrayContains(author, certifiedUloggers)
+      let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
+
+      // 2b) check summon is a direct reply under the post
+      let isReplyToPost = (post.root_author === post.parent_author 
+        && post.root_permlink === post.parent_permlink)
+      console.log('is reply directly under post:', isReplyToPost) 
 
       // get root post (to get all tags)
-      let rootPost = await getPostData(post.parent_author, post.parent_permlink).catch(() =>
+      let rootPost = await getPostData(post.root_author, post.root_permlink).catch(() =>
         console.error("Couldn't fetch ROOT post data with SteemJS")
       )
 
@@ -97,30 +108,38 @@ getCertifiedUloggers(client).then(res => {
 
       // 5) Summoner is overseer of sub-tag
       // TODO: Change to map
-      let subtags = OVERSEERS.filter(overseerObj => overseerObj.name === author).map(result => result.tags)
+      let subtags = OVERSEERS[summoner]
       // 7a) Is an overseer?
       console.log('summoner is an overseer? ', subtags);
       let isOverseer = (subtags && subtags.length > 0)
 
       // 7b) Is an overseer of sub-tag?
-      console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags[0]));
-      let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags[0]))
+      console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags));
+      let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags))
 
-      console.log('sendingComment')
       let commentTemplate: string = ''
-      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer) {
-        commentTemplate = SUCCESS_COMMENT(author, ACCOUNT_NAME)
+      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer && isReplyToPost) {
+        commentTemplate = SUCCESS_COMMENT(summoner, BOT)
       } else {
-        commentTemplate = FAIL_COMMENT(author, ACCOUNT_NAME, rootTags[1])
+        commentTemplate = FAIL_COMMENT(summoner, BOT, rootTags[1])
       }
 
       if (SIMULATE_ONLY) {
+        console.log('simulation only...')
         console.log(commentTemplate)
       } else {
+        console.log('sending comment...')
         // Send Comment
-        comment(client, author, permlink, key, ACCOUNT_NAME, commentTemplate).catch(() =>
+        comment(client, summoner, permlink, key, BOT, commentTemplate)
+        .then(() => {
+          console.log('voting...')
+          // Vote post
+          vote(client, BOT, post.root_author, post.root_permlink, DEFAULT_VOTE_WEIGHT, key).catch(() =>
+            console.error("Couldn't vote on the violated post")
+          )
+        }).catch(() => {
           console.error("Couldn't comment on the violated post")
-        )
+        })
       }
     }
     return
