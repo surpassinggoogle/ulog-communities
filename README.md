@@ -40,3 +40,6 @@ Then, run `pm2 start dist/index.js`
 
 
 
+## Credits
+
+Imported from https://github.com/superoo7/cn-malaysia.
