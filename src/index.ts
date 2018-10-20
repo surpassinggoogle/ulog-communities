@@ -65,6 +65,7 @@ getCertifiedUloggers(client).then(res => {
       if (post.body && post.body.toLowerCase().indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
+      console.log('summon post/comment data: ', post)
 
       // 2) check if certified ulogger
       if(ADD_ULOG_TEST_ACCOUNTS) {
