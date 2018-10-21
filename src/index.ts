@@ -44,6 +44,10 @@ console.log('Is simulation?', SIMULATE_ONLY)
 getCertifiedUloggers(client).then(res => {
   let certifiedUloggers: string[] = []
   res.forEach((obj: any) => certifiedUloggers.push(obj.following))
+  if(ADD_ULOG_TEST_ACCOUNTS) {
+    console.log('adding uloggers for testing')
+    certifiedUloggers.push('eastmael', 'east.autovote')
+  }
 
   // Stream Steem Blockchain
   stream.on('data', async operation => {
@@ -68,10 +72,6 @@ getCertifiedUloggers(client).then(res => {
       console.log('summon post/comment data: ', post)
 
       // 2) check if certified ulogger
-      if(ADD_ULOG_TEST_ACCOUNTS) {
-        console.log('adding uloggers for testing')
-        certifiedUloggers.push('eastmael', 'east.autovote')
-      }
       let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
 
       // 2b) check summon is a direct reply under the post
