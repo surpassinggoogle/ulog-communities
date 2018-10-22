@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import { Client, PrivateKey } from 'dsteem'
 import * as es from 'event-stream'
 import * as util from 'util'
+import * as striptags from 'striptags'
 
 // file
 import { arrayContains, die } from './functions'
@@ -50,6 +51,7 @@ const stream = client.blockchain.getOperationsStream()
 
 console.log('Operation started')
 console.log('Is simulation?', SIMULATE_ONLY)
+console.log('Bot command:', BOT_COMMAND)
 
 getCertifiedUloggers(client).then(res => {
   let certifiedUloggers: string[] = []
@@ -75,14 +77,11 @@ getCertifiedUloggers(client).then(res => {
         console.error("Couldn't fetch post data with SteemJS")
       )
 
+      let body = striptags(post.body.toLowerCase().split(" "))
       // check if summoned by specific command
-      if (!post.body
-          || !(post.body.toLowerCase().split(" ")
-                .indexOf(BOT_COMMAND.toLowerCase()) >= 0)) return
+      if (body.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
-      console.log('summon post/comment data: ', post)
-
       // 2) check if certified ulogger
       let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
 
@@ -136,7 +135,18 @@ getCertifiedUloggers(client).then(res => {
           && isSubtagOverseer && isReplyToPost) {
         commentTemplate = SUCCESS_COMMENT(summoner, BOT)
       } else {
-        commentTemplate = FAIL_COMMENT(summoner, BOT, rootTags[1])
+        commentTemplate = FAIL_COMMENT(
+          summoner,
+          BOT,
+          rootTags[1],
+          {
+            isCertifiedUlogger,
+            isUlogApp,
+            isFirstTagUlog,
+            isSubtagOverseer,
+            isReplyToPost,
+          }
+        )
       }
 
       if (SIMULATE_ONLY) {
