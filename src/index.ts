@@ -78,6 +78,7 @@ getCertifiedUloggers(client).then(res => {
       )
 
       let body = striptags(post.body.toLowerCase().split(" "))
+      console.log('body', body)
       // check if summoned by specific command
       if (body.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
