@@ -160,7 +160,7 @@ getCertifiedUloggers(client).then(res => {
         .then(() => {
           let voteWeight = 0
           if (parseInt(splitBody[1])) {
-            voteWeight = parseInt(splitBody[1])
+            voteWeight = parseInt(splitBody[1]) * 100
           } else {
             voteWeight = DEFAULT_VOTE_WEIGHT
           }
