@@ -8,7 +8,7 @@ interface ConditionFlags {
 
 let OVERSEERS: {[key:string]: string[]} = {
   'east.autovote': ['surpassinggoogle', 'subtag'], 
-  'eastmael': ['surpassinggoogle'], 
+  'eastmael': ['surpassinggoogle', 'newsubtag'], 
   'surpassinggoogle': ['surpassinggoogle'], 
 }
 

@@ -77,10 +77,10 @@ getCertifiedUloggers(client).then(res => {
         console.error("Couldn't fetch post data with SteemJS")
       )
 
-      let body = striptags(post.body.toLowerCase().split(" "))
-      if (summoner === "eastmael") console.log('body', body)
+      let splitBody = striptags(post.body.toLowerCase().replace("<br/>", " ")).split(" ")
+      if (summoner === "eastmael") console.log('split body arry', splitBody)
       // check if summoned by specific command
-      if (body.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
+      if (splitBody.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
       // 2) check if certified ulogger
@@ -158,10 +158,17 @@ getCertifiedUloggers(client).then(res => {
         // Send Comment
         comment(client, summoner, permlink, key, BOT, commentTemplate)
         .then(() => {
-          console.log('voting...')
+          let voteWeight = 0
+          if (parseInt(splitBody[1])) {
+            voteWeight = parseInt(splitBody[1]) * 100
+          } else {
+            voteWeight = DEFAULT_VOTE_WEIGHT
+          }
+
+          console.log('voting with weight...', voteWeight)
           // Vote post
           vote(client, BOT, post.root_author, post.root_permlink,
-              DEFAULT_VOTE_WEIGHT, key).catch(() =>
+              voteWeight, key).catch(() =>
             console.error("Couldn't vote on the violated post")
           )
         }).catch(() => {
