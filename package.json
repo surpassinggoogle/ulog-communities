@@ -16,7 +16,8 @@
     "event-stream": "^3.3.4",
     "jest": "^22.4.3",
     "nodemon": "^1.17.1",
-    "steem": "^0.7.1"
+    "steem": "^0.7.1",
+    "striptags": "^3.1.1"
   },
   "scripts": {
     "dev": "concurrently \"tsc -w\" \"nodemon dist/index.js\" ",

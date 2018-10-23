@@ -3,17 +3,26 @@ import * as dotenv from 'dotenv'
 import { Client, PrivateKey } from 'dsteem'
 import * as es from 'event-stream'
 import * as util from 'util'
+import * as striptags from 'striptags'
 
 // file
 import { arrayContains, die } from './functions'
 import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
-import { getContent, getPostData, getCertifiedUloggers, comment, vote } from './steem'
+import {
+    getContent,
+    getPostData,
+    getCertifiedUloggers,
+    comment,
+    vote
+} from './steem'
 
 // Init
 
 // Environment Init
 dotenv.config()
-if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND || !process.env.MAIN_TAG || !process.env.ULOGS_APP || !process.env.DEFAULT_VOTE_WEIGHT) throw new Error('ENV variable missing')
+if (!process.env.BOT || !process.env.ACCOUNT_KEY || !process.env.BOT_COMMAND
+    || !process.env.MAIN_TAG || !process.env.ULOGS_APP 
+    || !process.env.DEFAULT_VOTE_WEIGHT) throw new Error('ENV variable missing')
 // @ts-ignore
 let BOT: string = process.env.BOT
 // @ts-ignore
@@ -27,10 +36,12 @@ let ULOGS_APP: string = process.env.ULOGS_APP
 // @ts-ignore
 let SIMULATE_ONLY: boolean = (process.env.SIMULATE_ONLY === "true")
 // @ts-ignore
-let ADD_ULOG_TEST_ACCOUNTS: boolean = (process.env.ADD_ULOG_TEST_ACCOUNTS === "true")
+let ADD_ULOG_TEST_ACCOUNTS: boolean
+  = (process.env.ADD_ULOG_TEST_ACCOUNTS === "true")
 // @ts-ignore
 let DEFAULT_VOTE_WEIGHT: number = parseInt(process.env.DEFAULT_VOTE_WEIGHT)
-if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === '' || ULOGS_APP === '' || DEFAULT_VOTE_WEIGHT === 0) die('Check .env file')
+if (BOT === '' || ACCOUNT_KEY === '' || BOT_COMMAND === '' || MAIN_TAG === ''
+    || ULOGS_APP === '' || DEFAULT_VOTE_WEIGHT === 0) die('Check .env file')
 
 // Steem Init
 
@@ -40,10 +51,15 @@ const stream = client.blockchain.getOperationsStream()
 
 console.log('Operation started')
 console.log('Is simulation?', SIMULATE_ONLY)
+console.log('Bot command:', BOT_COMMAND)
 
 getCertifiedUloggers(client).then(res => {
   let certifiedUloggers: string[] = []
   res.forEach((obj: any) => certifiedUloggers.push(obj.following))
+  if(ADD_ULOG_TEST_ACCOUNTS) {
+    console.log('adding uloggers for testing')
+    certifiedUloggers.push('eastmael', 'east.autovote')
+  }
 
   // Stream Steem Blockchain
   stream.on('data', async operation => {
@@ -61,17 +77,13 @@ getCertifiedUloggers(client).then(res => {
         console.error("Couldn't fetch post data with SteemJS")
       )
 
+      let body = striptags(post.body.toLowerCase().split(" "))
+      if (summoner === "eastmael") console.log('body', body)
       // check if summoned by specific command
-      if (post.body && post.body.toLowerCase().indexOf(BOT_COMMAND.toLowerCase()) < 0) return
+      if (body.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
-      console.log('summon post/comment data: ', post)
-
       // 2) check if certified ulogger
-      if(ADD_ULOG_TEST_ACCOUNTS) {
-        console.log('adding uloggers for testing')
-        certifiedUloggers.push('eastmael', 'east.autovote')
-      }
       let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
 
       // 2b) check summon is a direct reply under the post
@@ -80,9 +92,10 @@ getCertifiedUloggers(client).then(res => {
       console.log('is reply directly under post:', isReplyToPost) 
 
       // get root post (to get all tags)
-      let rootPost = await getPostData(post.root_author, post.root_permlink).catch(() =>
-        console.error("Couldn't fetch ROOT post data with SteemJS")
-      )
+      let rootPost = await getPostData(post.root_author, post.root_permlink)
+        .catch(() =>
+          console.error("Couldn't fetch ROOT post data with SteemJS")
+        )
 
       // 3) posted using 'ulogs' app
       let app: string = ''
@@ -114,14 +127,27 @@ getCertifiedUloggers(client).then(res => {
       let isOverseer = (subtags && subtags.length > 0)
 
       // 7b) Is an overseer of sub-tag?
-      console.log('summoner is an overseer of sub-tag? ', arrayContains(rootTags[1], subtags));
+      console.log('summoner is an overseer of sub-tag? ',
+        arrayContains(rootTags[1], subtags));
       let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags))
 
       let commentTemplate: string = ''
-      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer && isSubtagOverseer && isReplyToPost) {
+      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
+          && isSubtagOverseer && isReplyToPost) {
         commentTemplate = SUCCESS_COMMENT(summoner, BOT)
       } else {
-        commentTemplate = FAIL_COMMENT(summoner, BOT, rootTags[1])
+        commentTemplate = FAIL_COMMENT(
+          summoner,
+          BOT,
+          rootTags[1],
+          {
+            isCertifiedUlogger,
+            isUlogApp,
+            isFirstTagUlog,
+            isSubtagOverseer,
+            isReplyToPost,
+          }
+        )
       }
 
       if (SIMULATE_ONLY) {
@@ -134,7 +160,8 @@ getCertifiedUloggers(client).then(res => {
         .then(() => {
           console.log('voting...')
           // Vote post
-          vote(client, BOT, post.root_author, post.root_permlink, DEFAULT_VOTE_WEIGHT, key).catch(() =>
+          vote(client, BOT, post.root_author, post.root_permlink,
+              DEFAULT_VOTE_WEIGHT, key).catch(() =>
             console.error("Couldn't vote on the violated post")
           )
         }).catch(() => {

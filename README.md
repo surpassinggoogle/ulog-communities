@@ -22,13 +22,13 @@ Create a `.env` to store your posting key, username, and other configurations.
 
 ```
 ACCOUNT_KEY=POSTING_KEY_HEREgit 
-ACCOUNT_NAME=STEEM_NAME
+BOT=STEEM_NAME
 BOT_COMMAND=ulogy
 MAIN_TAG=ulog
 ULOGS_APP=ulogs/1.0.0
 SIMULATE_ONLY=false
 ADD_ULOG_TEST_ACCOUNTS=true
-DEFAULT_VOTE_WEIGHT=10
+DEFAULT_VOTE_WEIGHT=1000
 ```
 
 Change variables in `config.ts`
