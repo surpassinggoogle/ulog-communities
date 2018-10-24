@@ -6,7 +6,7 @@ import * as util from 'util'
 import * as striptags from 'striptags'
 
 // file
-import { arrayContains, die } from './functions'
+import { arrayContains, die, getVoteWeight } from './functions'
 import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
 import {
     getContent,
@@ -77,10 +77,10 @@ getCertifiedUloggers(client).then(res => {
         console.error("Couldn't fetch post data with SteemJS")
       )
 
-      let body = striptags(post.body.toLowerCase().split(" "))
-      if (summoner === "eastmael") console.log('body', body)
+      let splitBody = striptags(post.body.toLowerCase().replace("<br/>", " ")).split(" ")
+      if (summoner === "eastmael") console.log('split body arry', splitBody)
       // check if summoned by specific command
-      if (body.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
+      if (splitBody.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
 
       // #################### CHECKS #######################
       // 2) check if certified ulogger
@@ -121,7 +121,8 @@ getCertifiedUloggers(client).then(res => {
 
       // 5) Summoner is overseer of sub-tag
       // TODO: Change to map
-      let subtags = OVERSEERS[summoner]
+      let overseerInfo = OVERSEERS[summoner]
+      let subtags = overseerInfo.tags
       // 7a) Is an overseer?
       console.log('summoner is an overseer? ', subtags);
       let isOverseer = (subtags && subtags.length > 0)
@@ -131,9 +132,14 @@ getCertifiedUloggers(client).then(res => {
         arrayContains(rootTags[1], subtags));
       let isSubtagOverseer = (isOverseer && arrayContains(rootTags[1], subtags))
 
+      // 8) is valid param weight
+      let isValidWeight = (isNaN(parseInt(splitBody[1])) === false)
+      console.log('is integer vote weight: ', isValidWeight)
+
+      let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
+          && isSubtagOverseer && isReplyToPost && isValidWeight
       let commentTemplate: string = ''
-      if (isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
-          && isSubtagOverseer && isReplyToPost) {
+      if (isSuccess) {
         commentTemplate = SUCCESS_COMMENT(summoner, BOT)
       } else {
         commentTemplate = FAIL_COMMENT(
@@ -146,6 +152,7 @@ getCertifiedUloggers(client).then(res => {
             isFirstTagUlog,
             isSubtagOverseer,
             isReplyToPost,
+            isValidWeight,
           }
         )
       }
@@ -158,12 +165,16 @@ getCertifiedUloggers(client).then(res => {
         // Send Comment
         comment(client, summoner, permlink, key, BOT, commentTemplate)
         .then(() => {
-          console.log('voting...')
-          // Vote post
-          vote(client, BOT, post.root_author, post.root_permlink,
-              DEFAULT_VOTE_WEIGHT, key).catch(() =>
-            console.error("Couldn't vote on the violated post")
-          )
+
+          if(isSuccess) {
+            let voteweight = getVoteWeight(parseInt(splitBody[1]), overseerInfo.maxweight)
+            console.log('voting with weight...', voteweight)
+            // Vote post
+            vote(client, BOT, post.root_author, post.root_permlink,
+                voteweight, key).catch(() =>
+              console.error("Couldn't vote on the violated post")
+            )
+          }
         }).catch(() => {
           console.error("Couldn't comment on the violated post")
         })
