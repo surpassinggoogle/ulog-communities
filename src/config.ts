@@ -18,9 +18,6 @@ const FAIL_COMMENT = (author: string, bot: string, subtag: string,
 
   console.log(flags)
 
-  let voteWeightErr = "invalid"
-  if (flags.isValidWeight === false)  voteWeightErr = "exceeds allowed weight"
-
   return `
 Hello @${author},
 
