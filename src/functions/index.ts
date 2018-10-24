@@ -9,4 +9,14 @@ const die = (msg: string) => {
   process.exit(1)
 }
 
-export { arrayContains, die }
+const getVoteWeight = (paramWeight: number, maxweight: number): number => {
+  let voteWeight = 0
+  if (paramWeight > maxweight) {
+    voteWeight = maxweight
+  } else {
+    voteWeight = paramWeight
+  }
+  return voteWeight * 100
+}
+
+export { arrayContains, die, getVoteWeight }

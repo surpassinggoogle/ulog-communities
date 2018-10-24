@@ -4,20 +4,23 @@ interface ConditionFlags {
   isFirstTagUlog: boolean
   isSubtagOverseer: boolean
   isReplyToPost: boolean
+  isValidWeight: boolean
 }
 
-let OVERSEERS: {[key:string]: string[]} = {
-  'east.autovote': ['surpassinggoogle', 'subtag'], 
-  'eastmael': ['surpassinggoogle', 'newsubtag'], 
-  'surpassinggoogle': ['surpassinggoogle'], 
+let OVERSEERS: {[key:string]: any} = {
+  'east.autovote': { tags: ['surpassinggoogle', 'subtag'], maxweight: 50}, 
+  'eastmael': { tags: ['surpassinggoogle', 'newsubtag'], maxweight: 60}, 
+  'surpassinggoogle': { tags: ['surpassinggoogle'], maxweight: 100}, 
 }
 
 const FAIL_COMMENT = (author: string, bot: string, subtag: string, 
   flags: ConditionFlags): string => {
 
+  console.log(flags)
 
+  let voteWeightErr = "invalid"
+  if (flags.isValidWeight === false)  voteWeightErr = "exceeds allowed weight"
 
-  console.log(flags);
   return `
 Hello @${author},
 
@@ -28,6 +31,7 @@ ${flags.isFirstTagUlog      ? "" : "1. #ulog is not the first tag of this post."
 ${flags.isSubtagOverseer    ? "" : `1. You're not an overseer of #${subtag}.`}
 ${flags.isUlogApp           ? "" : "1. The post was not submitted through [ulogs.org](https://ulogs.org)."}
 ${flags.isReplyToPost       ? "" : "1. You did not reply directly to the post."}
+${flags.isValidWeight       ? "" : "1. You did not specify a valid vote weight."}
 
 Please consider reaching out to @surpassinggoogle to address this.
   `
