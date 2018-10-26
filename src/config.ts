@@ -34,7 +34,7 @@ ${flags.isValidWeight       ? "" : "1. You did not specify a valid vote weight."
 ${flags.isAlreadyVoted      ? "1. I've already voted on it." : ""}
 ${flags.isPastCurationWindow ? "" : "1. It's still within the curation window."}
 
-Please consider reaching out to @surpassinggoogle to address this.
+${flags.isAlreadyVoted ? "" : Please consider reaching out to @surpassinggoogle to address this.}
   `
 }
 
