@@ -136,8 +136,18 @@ getCertifiedUloggers(client).then(res => {
       let isValidWeight = (isNaN(parseInt(splitBody[1])) === false)
       console.log('is integer vote weight: ', isValidWeight)
 
+      // 9) is already upvoted
+      let isAlreadyVoted = rootPost.active_votes.some((r:any) => {
+        return BOT === r.voter
+      })
+      console.log('is already voted: ', isAlreadyVoted)
+
+      // 10) is past curation window
+      let isPastCurationWindow = true
+      console.log('is past curation window: ', isPastCurationWindow)
+
       let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
-          && isSubtagOverseer && isReplyToPost && isValidWeight
+          && isSubtagOverseer && isReplyToPost && isValidWeight && !isAlreadyVoted && isPastCurationWindow
       let commentTemplate: string = ''
       if (isSuccess) {
         commentTemplate = SUCCESS_COMMENT(summoner, BOT)
@@ -153,6 +163,8 @@ getCertifiedUloggers(client).then(res => {
             isSubtagOverseer,
             isReplyToPost,
             isValidWeight,
+            isAlreadyVoted,
+            isPastCurationWindow,
           }
         )
       }
