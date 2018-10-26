@@ -5,6 +5,8 @@ interface ConditionFlags {
   isSubtagOverseer: boolean
   isReplyToPost: boolean
   isValidWeight: boolean
+  isAlreadyVoted: boolean
+  isPastCurationWindow: boolean
 }
 
 let OVERSEERS: {[key:string]: any} = {
@@ -29,6 +31,8 @@ ${flags.isSubtagOverseer    ? "" : `1. You're not an overseer of #${subtag}.`}
 ${flags.isUlogApp           ? "" : "1. The post was not submitted through [ulogs.org](https://ulogs.org)."}
 ${flags.isReplyToPost       ? "" : "1. You did not reply directly to the post."}
 ${flags.isValidWeight       ? "" : "1. You did not specify a valid vote weight."}
+${flags.isAlreadyVoted      ? "1. I've already voted on it." : ""}
+${flags.isPastCurationWindow ? "" : "1. It's still within the curation window."}
 
 Please consider reaching out to @surpassinggoogle to address this.
   `
