@@ -66,80 +66,81 @@ mongoose.connection
   .on('connected', () => {
     console.log('Mongoose connection open...');
 
-    // Query overseer info
-    let overseersMap: {[key:string]: any} = {}
-    Overseer.find()
-      .then((result: any) => {
-        result.forEach((overseer: any) => {
-          overseersMap[overseer.name] = { tags: overseer.tags, maxweight: overseer.maxweight }
-        })
-        console.log('overseers map size:', Object.keys(overseersMap).length)
+    getCertifiedUloggers(client).then(res => {
+      let certifiedUloggers: string[] = []
+      res.forEach((obj: any) => certifiedUloggers.push(obj.following))
+      if(ADD_ULOG_TEST_ACCOUNTS) {
+        console.log('adding uloggers for testing')
+        certifiedUloggers.push('eastmael', 'east.autovote')
+      }
 
-        getCertifiedUloggers(client).then(res => {
-          let certifiedUloggers: string[] = []
-          res.forEach((obj: any) => certifiedUloggers.push(obj.following))
-          if(ADD_ULOG_TEST_ACCOUNTS) {
-            console.log('adding uloggers for testing')
-            certifiedUloggers.push('eastmael', 'east.autovote')
+      // Stream Steem Blockchain
+      stream.on('data', async operation => {
+        // Look for comment type of transaction
+        if (operation.op[0] == 'comment') {
+          let txData = operation.op[1]
+
+          // check if reply (return if post)
+          if (txData.parent_author === '') return
+
+          // get post data
+          let summoner: string = txData.author
+          let permlink: string = txData.permlink
+          let post = await getPostData(summoner, permlink).catch(() =>
+            console.error("Couldn't fetch post data with SteemJS")
+          )
+
+          let splitBody = striptags(post.body.toLowerCase().replace("<br/>", " ")).split(" ")
+          if (summoner === "eastmael") console.log('split body arry', splitBody)
+          // check if summoned by specific command
+          if (splitBody.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
+
+          // #################### CHECKS #######################
+          // 2) check if certified ulogger
+          let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
+
+          // 2b) check summon is a direct reply under the post
+          let isReplyToPost = (post.root_author === post.parent_author 
+            && post.root_permlink === post.parent_permlink)
+          console.log('is reply directly under post:', isReplyToPost) 
+
+          // get root post (to get all tags)
+          let rootPost = await getPostData(post.root_author, post.root_permlink)
+            .catch(() =>
+              console.error("Couldn't fetch ROOT post data with SteemJS")
+            )
+
+          // 3) posted using 'ulogs' app
+          let app: string = ''
+          try {
+            app = JSON.parse(rootPost.json_metadata).app
+          } catch (e) {
+            console.error('Invalid app')
+            return
           }
+          console.log('posted using ulogs: ', app.indexOf(ULOGS_APP) >= 0)
+          let isUlogApp = app.indexOf(ULOGS_APP) >= 0
 
-          // Stream Steem Blockchain
-          stream.on('data', async operation => {
-            // Look for comment type of transaction
-            if (operation.op[0] == 'comment') {
-              let txData = operation.op[1]
+          // 4) First tag is 'ulogs'
+          let rootTags: string[]
+          try {
+            rootTags = JSON.parse(rootPost.json_metadata).tags
+          } catch (e) {
+            console.error('Invalid root tags')
+            return
+          }
+          console.log('first tag is main tag: ', rootTags[0] === MAIN_TAG)
+          let isFirstTagUlog = (rootTags[0] === MAIN_TAG)
 
-              // check if reply (return if post)
-              if (txData.parent_author === '') return
+          // Query overseer info
+          Overseer.find()
+            .then((result: any) => {
 
-              // get post data
-              let summoner: string = txData.author
-              let permlink: string = txData.permlink
-              let post = await getPostData(summoner, permlink).catch(() =>
-                console.error("Couldn't fetch post data with SteemJS")
-              )
-
-              let splitBody = striptags(post.body.toLowerCase().replace("<br/>", " ")).split(" ")
-              if (summoner === "eastmael") console.log('split body arry', splitBody)
-              // check if summoned by specific command
-              if (splitBody.indexOf(BOT_COMMAND.toLowerCase()) < 0) return
-
-              // #################### CHECKS #######################
-              // 2) check if certified ulogger
-              let isCertifiedUlogger = arrayContains(summoner, certifiedUloggers)
-
-              // 2b) check summon is a direct reply under the post
-              let isReplyToPost = (post.root_author === post.parent_author 
-                && post.root_permlink === post.parent_permlink)
-              console.log('is reply directly under post:', isReplyToPost) 
-
-              // get root post (to get all tags)
-              let rootPost = await getPostData(post.root_author, post.root_permlink)
-                .catch(() =>
-                  console.error("Couldn't fetch ROOT post data with SteemJS")
-                )
-
-              // 3) posted using 'ulogs' app
-              let app: string = ''
-              try {
-                app = JSON.parse(rootPost.json_metadata).app
-              } catch (e) {
-                console.error('Invalid app')
-                return
-              }
-              console.log('posted using ulogs: ', app.indexOf(ULOGS_APP) >= 0)
-              let isUlogApp = app.indexOf(ULOGS_APP) >= 0
-
-              // 4) First tag is 'ulogs'
-              let rootTags: string[]
-              try {
-                rootTags = JSON.parse(rootPost.json_metadata).tags
-              } catch (e) {
-                console.error('Invalid root tags')
-                return
-              }
-              console.log('first tag is main tag: ', rootTags[0] === MAIN_TAG)
-              let isFirstTagUlog = (rootTags[0] === MAIN_TAG)
+              let overseersMap: {[key:string]: any} = {}
+              result.forEach((overseer: any) => {
+                overseersMap[overseer.name] = { tags: overseer.tags, maxweight: overseer.maxweight }
+              })
+              console.log('overseers map size:', Object.keys(overseersMap).length)
 
               // 5) Summoner is overseer of sub-tag
               let overseerInfo = overseersMap[summoner]
@@ -214,16 +215,17 @@ mongoose.connection
                   console.error("Couldn't comment on the violated post")
                 })
               }
-            }
-            return
-          })
-        })
+            })
+            .catch(() => { console.log('Something went wrong in fetching overseers.') })  // end: Overseer.find()
+        }   // end: if (operation.op[0] == 'comment') {}
+        return
 
-      })
-      .catch(() => { console.log('Sorry! Something went wrong.'); });
+      })  // end: stream.on()
 
-  })
+    })  // end: getCertifiedUloggers()
+
+  })  // end: mongo.connection on:connected
   .on('error', (err: any) => {
     console.log(`Connection error: ${err.message}`);
-  });
+  })  // end: mongo.connection on:error
 
