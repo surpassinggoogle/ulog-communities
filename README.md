@@ -2,7 +2,7 @@
 
 Steem Bot To Enable And Grow Ulogs.org Communities & Ulog-subtags.
 
-Current Version: v0.0.1
+Current Version: v1.0.0
 
 License: MIT
 
