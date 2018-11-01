@@ -11,7 +11,7 @@ const Overseer = mongoose.model('Overseer');
 
 // file
 import { arrayContains, die, getVoteWeight } from './functions'
-import { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT } from './config'
+import { FAIL_COMMENT, SUCCESS_COMMENT } from './config'
 import {
     getContent,
     getPostData,
