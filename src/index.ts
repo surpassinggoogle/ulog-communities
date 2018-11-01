@@ -146,8 +146,11 @@ mongoose.connection
               let overseerInfo = overseersMap[summoner]
               console.log('overseer info:', overseerInfo)
 
-              let subtags = overseerInfo.tags
               // 7a) Is an overseer?
+              let subtags = []
+              if (overseerInfo) {
+                subtags = overseerInfo.tags
+              }
               console.log('summoner is an overseer? ', subtags);
               let isOverseer = (subtags && subtags.length > 0)
 
@@ -170,7 +173,7 @@ mongoose.connection
               let isPastCurationWindow = true
               console.log('is past curation window: ', isPastCurationWindow)
 
-              let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
+              let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog
                   && isSubtagOverseer && isReplyToPost && isValidWeight && !isAlreadyVoted && isPastCurationWindow
               let commentTemplate: string = ''
               if (isSuccess) {
