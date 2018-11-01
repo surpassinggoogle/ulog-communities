@@ -47,4 +47,4 @@ const WHITELIST: string[] = ['superoo7']
 // percentage allowed for CN words (e.g. 20%)
 const PERCENTAGE: number = 20
 
-export { OVERSEERS, FAIL_COMMENT, SUCCESS_COMMENT, WHITELIST, PERCENTAGE }
+export { FAIL_COMMENT, SUCCESS_COMMENT, WHITELIST, PERCENTAGE }
