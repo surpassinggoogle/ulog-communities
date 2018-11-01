@@ -173,7 +173,7 @@ mongoose.connection
               let isPastCurationWindow = true
               console.log('is past curation window: ', isPastCurationWindow)
 
-              let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog && isOverseer 
+              let isSuccess = isCertifiedUlogger && isUlogApp && isFirstTagUlog
                   && isSubtagOverseer && isReplyToPost && isValidWeight && !isAlreadyVoted && isPastCurationWindow
               let commentTemplate: string = ''
               if (isSuccess) {

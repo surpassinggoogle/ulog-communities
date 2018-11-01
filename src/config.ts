@@ -171,14 +171,14 @@ Hello @${author},
 
 Thank you for summoning me.
 However, I wasn't able to upvote the post because:
-${flags.isCertifiedUlogger  ? "" : "1. You're not a certified ulogger."}
-${flags.isFirstTagUlog      ? "" : "1. #ulog is not the first tag of this post."}
-${flags.isSubtagOverseer    ? "" : `1. You're not an overseer of #${subtag}.`}
-${flags.isUlogApp           ? "" : "1. The post was not submitted through [ulogs.org](https://ulogs.org)."}
-${flags.isReplyToPost       ? "" : "1. You did not reply directly to the post."}
-${flags.isValidWeight       ? "" : "1. You did not specify a valid vote weight."}
-${flags.isAlreadyVoted      ? "1. I've already voted on it." : ""}
-${flags.isPastCurationWindow ? "" : "1. It's still within the curation window."}
+${flags.isCertifiedUlogger  ? "" : "* You're not a certified ulogger."}
+${flags.isFirstTagUlog      ? "" : "* #ulog is not the first tag of this post."}
+${flags.isSubtagOverseer    ? "" : `* You're not an overseer of #${subtag}.`}
+${flags.isUlogApp           ? "" : "* The post was not submitted through [ulogs.org](https://ulogs.org)."}
+${flags.isReplyToPost       ? "" : "* You did not reply directly to the post."}
+${flags.isValidWeight       ? "" : "* You did not specify a valid vote weight."}
+${flags.isAlreadyVoted      ? "* I've already voted on it." : ""}
+${flags.isPastCurationWindow ? "" : "* It's still within the curation window."}
 
 ${flags.isAlreadyVoted ? "" : "Please consider reaching out to @surpassinggoogle to address this."}
   `
